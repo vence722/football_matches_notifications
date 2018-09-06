@@ -52,7 +52,7 @@ func StartTelegramBot(crawler func() ([]*Match, error)) error {
 			fmt.Println("User", update.Message.From.UserName, "subscribed")
 
 			// reply message
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Thanks for subscribing this channel. Updates for football matches results will be sent to you at 9:00 AM every day.")
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Thanks for subscribing this channel. Updates for football matches results will be sent to you every hour.")
 			bot.Send(msg)
 		} else if inMsg == "/unsubscribe" {
 			// remove chat id in replay list
@@ -78,7 +78,7 @@ func StartTelegramBot(crawler func() ([]*Match, error)) error {
 
 func startCronJob(bot *tgbotapi.BotAPI, crawler func() ([]*Match, error)) {
 	c := cron.New()
-	c.AddFunc("0 0 9 * * *", func() {
+	c.AddFunc("0 0 * * * *", func() {
 		matches, err := crawler()
 		if err != nil {
 			fmt.Println("Something wrong when crawling match results")
