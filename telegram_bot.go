@@ -52,7 +52,7 @@ func StartTelegramBot(crawler func() ([]*Match, error)) error {
 			fmt.Println("User", update.Message.From.UserName, "subscribed")
 
 			// reply message
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Thanks for subscribing this channel. Updates for football matches results will be sent to you every hour.")
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Thanks for subscribing this channel. Updates for football matches results will be sent to you at every 8 hours(00:00, 08:00, 16:00).")
 			bot.Send(msg)
 		} else if inMsg == "/unsubscribe" {
 			// remove chat id in replay list
@@ -78,7 +78,7 @@ func StartTelegramBot(crawler func() ([]*Match, error)) error {
 
 func startCronJob(bot *tgbotapi.BotAPI, crawler func() ([]*Match, error)) {
 	c := cron.New()
-	c.AddFunc("0 0 * * * *", func() {
+	c.AddFunc("0 0 0-23/8 * * *", func() {
 		matches, err := crawler()
 		if err != nil {
 			fmt.Println("Something wrong when crawling match results")
@@ -100,8 +100,22 @@ func formatMatches(matches []*Match) string {
 	loc, _ := time.LoadLocation("Asia/Shanghai")
 	// format matches
 	content := "Matches results at " + time.Now().In(loc).Format("2006-01-02 15:04:05") + ":\n"
+
+	// Finished matches
+	content += "\nFinished matches:\n"
 	for _, match := range matches {
-		content += (match.Competition + "|" + match.Time.In(loc).Format("2006-01-02 15:04:05") + "|" + match.HomeTeam + " " + convert.Int2Str(match.HomeScore) + ":" + convert.Int2Str(match.AwayScore) + " " + match.AwayTeam + "\n")
+		if match.IsFinished {
+			content += (match.Competition + "|" + match.Time.In(loc).Format("2006-01-02 15:04:05") + "|" + match.HomeTeam + " " + convert.Int2Str(match.HomeScore) + ":" + convert.Int2Str(match.AwayScore) + " " + match.AwayTeam + "\n")
+		}
 	}
+
+	// Next matches
+	content += "\nNext matches:\n"
+	for _, match := range matches {
+		if !match.IsFinished {
+			content += (match.Competition + "|" + match.Time.In(loc).Format("2006-01-02 15:04:05") + "|" + match.HomeTeam + " vs " + match.AwayTeam + "\n")
+		}
+	}
+
 	return content
 }
