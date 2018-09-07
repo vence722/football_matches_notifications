@@ -48,25 +48,25 @@ func StartTelegramBot(crawler func() ([]*Match, error)) error {
 			bot.Send(msg)
 		} else if inMsg == "/subscribe" {
 			// add chat id in reply list
-			replyChatIDs = append(replyChatIDs, update.Message.Chat.ID)
-			fmt.Println("User", update.Message.From.UserName, "subscribed")
-
-			// reply message
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Thanks for subscribing this channel. Updates for football matches results will be sent to you at every 8 hours(00:00, 08:00, 16:00).")
-			bot.Send(msg)
-		} else if inMsg == "/unsubscribe" {
-			// remove chat id in replay list
-			for i, id := range replyChatIDs {
-				if id == update.Message.Chat.ID {
-					replyChatIDs = append(replyChatIDs[:i], replyChatIDs[i+1:]...)
-					break
-				}
+			if subscribeChannel(update) {
+				// reply success message
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Thanks for subscribing this channel. Updates for football matches results will be sent to you at every 8 hours(00:00, 08:00, 16:00).")
+				bot.Send(msg)
+			} else {
+				// reply user already subscribed
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Haha, you have already subscribed this channel.")
+				bot.Send(msg)
 			}
-			fmt.Println("User", update.Message.From.UserName, "unsubscribed")
-
-			// reply message
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "You have unsubscribed from this channel")
-			bot.Send(msg)
+		} else if inMsg == "/unsubscribe" {
+			if unsubscribeChannel(update) {
+				// reply success message
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Bye! You have unsubscribed from this channel.")
+				bot.Send(msg)
+			} else {
+				// reply user not subscribed
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Sorry, you havn't subscribe this channel.")
+				bot.Send(msg)
+			}
 		} else {
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Sorry, I don't know what you're saying.")
 			bot.Send(msg)
@@ -118,4 +118,34 @@ func formatMatches(matches []*Match) string {
 	}
 
 	return content
+}
+
+func subscribeChannel(update tgbotapi.Update) bool {
+	for _, replyChatID := range replyChatIDs {
+		if replyChatID == update.Message.Chat.ID {
+			fmt.Println("User", update.Message.From.UserName, "allready subscribed")
+			return false
+		}
+	}
+	replyChatIDs = append(replyChatIDs, update.Message.Chat.ID)
+	fmt.Println("User", update.Message.From.UserName, "subscribed")
+	return true
+}
+
+func unsubscribeChannel(update tgbotapi.Update) bool {
+	res := false
+	// remove chat id in replay list
+	for i, id := range replyChatIDs {
+		if id == update.Message.Chat.ID {
+			replyChatIDs = append(replyChatIDs[:i], replyChatIDs[i+1:]...)
+			res = true
+			break
+		}
+	}
+	if res {
+		fmt.Println("User", update.Message.From.UserName, "unsubscribed")
+	} else {
+		fmt.Println("User", update.Message.From.UserName, "hasn't subscribed this channel")
+	}
+	return res
 }
