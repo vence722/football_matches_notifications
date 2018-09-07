@@ -21,6 +21,7 @@ var CompetitionsToRetrieve = []string{
 	"Ligue 1",
 	"UEFA Champions League",
 	"UEFA Europa League",
+	"UEFA Nations League",
 	"Friendlies",
 	"FIFA Club World Cup",
 }
