@@ -26,6 +26,19 @@ var CompetitionsToRetrieve = []string{
 	"FIFA Club World Cup",
 }
 
+var CompetitionsNameTranslations = map[string]string{
+	"Premier League":        "英超",
+	"Primera División":      "西甲",
+	"Serie A":               "意甲",
+	"Bundesliga":            "德甲",
+	"Ligue 1":               "法甲",
+	"UEFA Champions League": "歐聯盃",
+	"UEFA Europa League":    "歐霸盃",
+	"UEFA Nations League":   "歐洲國家聯賽",
+	"Friendlies":            "友誼賽",
+	"FIFA Club World Cup":   "世界盃",
+}
+
 func CrawlMatches() ([]*Match, error) {
 	resp, errRequest := http.Get(URLMatches)
 	if errRequest != nil {
@@ -60,7 +73,7 @@ func parseMatches(pageData string) ([]*Match, error) {
 		if contains(CompetitionsToRetrieve, competitionName) {
 			elem.Find("div.match-row").Each(func(index int, elem *goquery.Selection) {
 				match := &Match{}
-				match.Competition = competitionName
+				match.Competition = CompetitionsNameTranslations[competitionName]
 
 				// Retrieve match time
 				value, exists := elem.Find("div.match-status > time").Attr("datetime")
