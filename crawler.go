@@ -11,7 +11,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-const URLMatches = "http://www.goal.com/en/matches"
+const URLMatches = "https://www.goal.com/en/live-scores"
 
 var CompetitionsToRetrieve = []string{
 	"Premier League",
@@ -76,9 +76,9 @@ func parseMatches(pageData string) ([]*Match, error) {
 				match.Competition = CompetitionsNameTranslations[competitionName]
 
 				// Retrieve match time
-				value, exists := elem.Find("div.match-status > time").Attr("datetime")
+				value, exists := elem.Find("div.match-status > time").Attr("data-utc")
 				if exists {
-					match.Time, _ = time.Parse("2006-01-02T15:04:05+00:00", value)
+					match.Time = time.Unix(convert.Str2Int64(value)/1000, 0)
 				}
 
 				// Retrieve if match is finished

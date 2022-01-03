@@ -123,7 +123,7 @@ func formatMatches(matches []*Match) string {
 func subscribeChannel(update tgbotapi.Update) bool {
 	for _, replyChatID := range replyChatIDs {
 		if replyChatID == update.Message.Chat.ID {
-			fmt.Println("User", update.Message.From.UserName, "allready subscribed")
+			fmt.Println("User", update.Message.From.UserName, "already subscribed")
 			return false
 		}
 	}
